@@ -9,14 +9,45 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    goals: 'package'
+stages:
+- stage: Build
+  displayName: 'Build and Test'
+  jobs:
+  - job: MavenBuild
+    displayName: 'Maven Build'
+    steps:
+    - task: Maven@3
+      inputs:
+        mavenPomFile: 'pom.xml'
+        mavenOptions: '-Xmx3072m'
+        javaHomeOption: 'JDKVersion'
+        jdkVersionOption: '1.8'
+        jdkArchitectureOption: 'x64'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+        goals: 'package'
+
+- stage: Deploy
+  displayName: 'Deploy to Staging'
+  jobs:
+  - job: DeployToStaging
+    displayName: 'Deploy'
+    dependsOn: Build
+    steps:
+    # Add deployment steps here using Azure CLI, custom scripts, etc.
+    - script: |
+        echo "Deploying to Staging..."
+        # Add your deployment script or commands here
+
+- stage: NotifyOnFailure
+  displayName: 'Notify Team on Failure'
+  jobs:
+  - job: NotifyTeam
+    displayName: 'Notify'
+    dependsOn: Deploy
+    condition: failed()
+    steps:
+    - script: |
+        echo "Build or deployment failed. Notify the team!"
+        # Add your notification mechanism here
+
