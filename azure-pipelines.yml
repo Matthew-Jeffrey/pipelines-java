@@ -32,7 +32,6 @@ stages:
   jobs:
   - job: DeployToStaging
     displayName: 'Deploy'
-    dependsOn: Build
     steps:
     # Add deployment steps here using Azure CLI, custom scripts, etc.
     - script: |
@@ -44,7 +43,6 @@ stages:
   jobs:
   - job: NotifyTeam
     displayName: 'Notify'
-    dependsOn: Deploy
     condition: failed()
     steps:
     - script: |
